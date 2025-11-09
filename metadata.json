@@ -1,0 +1,5 @@
+{
+  "name": "React Point of Sale System",
+  "description": "A modern, responsive Point of Sale (POS) application for a retail store, built with React and Tailwind CSS. It features product browsing, a shopping cart, and a simulated sales process.",
+  "requestFramePermissions": []
+}
