@@ -1,4 +1,72 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Dark mode styles */
+.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.dark-mode .bg-white {
+  background-color: #1e1e1e !important;
+}
+
+.dark-mode .text-dark {
+  color: #ffffff !important;
+}
+
+.dark-mode .text-secondary {
+  color: #cccccc !important;
+}
+
+.dark-mode .shadow {
+  box-shadow: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode .card {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #ffffff;
+}
+
+.dark-mode .card-body {
+  color: #ffffff;
+}
+
+.dark-mode .text-muted {
+  color: #cccccc !important;
+}
+
+.dark-mode .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.dark-mode .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+}
+
+.dark-mode .pagination .page-link {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #ffffff;
+}
+
+.dark-mode .pagination .page-link:hover {
+  background-color: #333;
+  border-color: #555;
+  color: #ffffff;
+}
+
+.dark-mode .pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
+}
+
+.dark-mode .pagination .page-item.disabled .page-link {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #666;
+}
 

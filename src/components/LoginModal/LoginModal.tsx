@@ -75,60 +75,56 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-          <CloseIcon className="w-6 h-6" />
-        </button>
-
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login do Vendedor</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Usuário
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Digite seu usuário"
-              autoFocus
-            />
+    <div className={`modal fade ${isOpen ? 'show d-block' : ''}`} style={{backgroundColor: 'rgba(0,0,0,0.5)'}} onClick={onClose}>
+      <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Login do Vendedor</h5>
+            <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
+          <div className="modal-body">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <label htmlFor="username" className="form-label">
+                  Usuário
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="form-control"
+                  placeholder="Digite seu usuário"
+                  autoFocus
+                />
+              </div>
 
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Senha
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Digite sua senha"
-            />
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">
+                  Senha
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-control"
+                  placeholder="Digite sua senha"
+                />
+              </div>
+
+              {error && <p className="text-danger small text-center mb-3">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary w-100"
+              >
+                {loading ? 'Entrando...' : 'Login'}
+              </button>
+            </form>
           </div>
-
-          {error && <p className="text-red-500 text-sm mb-3 text-center">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-          >
-            {loading ? 'Entrando...' : 'Login'}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );

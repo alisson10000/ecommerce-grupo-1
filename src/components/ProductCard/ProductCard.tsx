@@ -27,14 +27,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const imageUrl = `${API_BASE_URL}/imagens/${product.id}.jpg`;
 
   return (
-    <div
-      className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col"
-    >
+    <div className="card h-100 shadow-sm">
       {/* ✅ Usa imagem do backend, com fallback se der erro */}
       <img
         src={imageUrl}
         alt={product.nome}
-        className="w-full h-48 object-cover"
+        className="card-img-top"
+        style={{height: '12rem', objectFit: 'cover'}}
         onError={(e) => {
           console.error(`🚨 [Card] Erro ao carregar imagem do produto ID=${product.id}`);
           console.error("URL com erro:", (e.target as HTMLImageElement).src);
@@ -42,17 +41,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         }}
       />
 
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-semibold text-gray-800 truncate">{product.nome}</h3>
+      <div className="card-body d-flex flex-column">
+        <h3 className="card-title fs-6 fw-semibold text-truncate">{product.nome}</h3>
 
         {/* 🏷️ Exibe categoria se houver */}
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-muted small mb-4">
           {product.categoria?.nome || 'Sem categoria'}
         </p>
 
-        <div className="mt-auto flex justify-between items-center">
+        <div className="mt-auto d-flex justify-content-between align-items-center">
           {/* 💰 Exibe preço com fallback */}
-          <p className="text-xl font-bold text-gray-900">
+          <p className="fs-5 fw-bold text-dark mb-0">
             {product.preco !== undefined && product.preco !== null
               ? `R$ ${product.preco.toFixed(2)}`
               : 'R$ 0,00'}
@@ -67,9 +66,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
               });
               onAddToCart(product);
             }}
-            className="flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75 transition-all duration-200"
+            className="btn btn-primary d-flex align-items-center justify-content-center"
           >
-            <CartIcon className="w-5 h-5 mr-2" />
+            <CartIcon className="me-2" />
             Adicionar
           </button>
         </div>

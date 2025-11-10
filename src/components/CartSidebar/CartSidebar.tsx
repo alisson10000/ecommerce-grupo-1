@@ -41,33 +41,16 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   }, [cartItems, subtotal]);
 
   return (
-    <>
-      {/* 🔳 Fundo escuro */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={onClose}
-      />
+    <div className={`offcanvas offcanvas-end ${isOpen ? 'show' : ''}`} style={{visibility: isOpen ? 'visible' : 'hidden'}}>
+      <div className="offcanvas-header">
+        <h5 className="offcanvas-title">Carrinho</h5>
+        <button type="button" className="btn-close" onClick={onClose}></button>
+      </div>
 
-      {/* 🧰 Painel lateral */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">Carrinho</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
-            <CloseIcon className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Conteúdo */}
+      <div className="offcanvas-body">
         {cartItems.length === 0 ? (
-          <div className="flex-grow flex flex-col items-center justify-center text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="d-flex flex-column align-items-center justify-content-center text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" className="mb-3" style={{width: '4rem', height: '4rem'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -75,56 +58,57 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-            <p className="text-lg">Seu carrinho está vazio.</p>
+            <p className="fs-5">Seu carrinho está vazio.</p>
           </div>
         ) : (
-          <div className="flex-grow overflow-y-auto p-4 space-y-4">
+          <div>
             {cartItems.map((item) => {
               const imageUrl = `${API_BASE_URL}/imagens/${item.id}.jpg`;
               const itemTotal = ((item.preco ?? 0) * item.quantity).toFixed(2);
 
               return (
-                <div key={item.id} className="flex items-start space-x-4 border-b pb-3">
+                <div key={item.id} className="d-flex align-items-start gap-3 border-bottom pb-3 mb-3">
                   <img
                     src={imageUrl}
                     alt={item.nome}
-                    className="w-20 h-20 rounded-md object-cover"
+                    className="rounded"
+                    style={{width: '5rem', height: '5rem', objectFit: 'cover'}}
                     onError={(e) => {
                       console.error(`🚨 Erro ao carregar imagem ${item.id}`);
                       (e.target as HTMLImageElement).src = '/placeholder.jpg';
                     }}
                   />
-                  <div className="flex-grow">
-                    <p className="font-semibold text-gray-800">{item.nome}</p>
-                    <p className="text-sm text-gray-500">R$ {(item.preco ?? 0).toFixed(2)}</p>
+                  <div className="flex-grow-1">
+                    <p className="fw-semibold text-dark mb-1">{item.nome}</p>
+                    <p className="text-muted small mb-2">R$ {(item.preco ?? 0).toFixed(2)}</p>
 
-                    <div className="flex items-center mt-2">
+                    <div className="d-flex align-items-center">
                       <button
                         onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                        className="p-1 rounded-full border hover:bg-gray-100 disabled:opacity-50"
-                        disabled={item.quantity <= 0}
+                        className="btn btn-outline-secondary btn-sm rounded-circle me-2"
+                        disabled={item.quantity <= 1}
                       >
-                        <MinusIcon className="w-4 h-4" />
+                        <MinusIcon />
                       </button>
 
-                      <span className="px-3 font-medium">{item.quantity}</span>
+                      <span className="px-3 fw-medium">{item.quantity}</span>
 
                       <button
                         onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                        className="p-1 rounded-full border hover:bg-gray-100"
+                        className="btn btn-outline-secondary btn-sm rounded-circle ms-2"
                       >
-                        <PlusIcon className="w-4 h-4" />
+                        <PlusIcon />
                       </button>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900">R$ {itemTotal}</p>
+                  <div className="text-end">
+                    <p className="fw-bold text-dark mb-1">R$ {itemTotal}</p>
                     <button
                       onClick={() => onUpdateQuantity(item.id, 0)}
-                      className="text-red-500 hover:text-red-700 mt-2"
+                      className="btn btn-link text-danger p-0"
                     >
-                      <TrashIcon className="w-5 h-5" />
+                      <TrashIcon />
                     </button>
                   </div>
                 </div>
@@ -132,25 +116,24 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
             })}
           </div>
         )}
-
-        {/* Rodapé */}
-        {cartItems.length > 0 && (
-          <div className="p-4 border-t space-y-4 bg-gray-50">
-            <div className="flex justify-between text-lg font-semibold text-gray-800">
-              <span>Subtotal</span>
-              <span>R$ {subtotal.toFixed(2)}</span>
-            </div>
-
-            <button
-              onClick={onFinalizeSale}
-              className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Finalizar Compra
-            </button>
-          </div>
-        )}
       </div>
-    </>
+
+      {cartItems.length > 0 && (
+        <div className="offcanvas-footer p-3 border-top bg-light">
+          <div className="d-flex justify-content-between fs-5 fw-semibold text-dark mb-3">
+            <span>Subtotal</span>
+            <span>R$ {subtotal.toFixed(2)}</span>
+          </div>
+
+          <button
+            onClick={onFinalizeSale}
+            className="btn btn-primary w-100"
+          >
+            Finalizar Compra
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

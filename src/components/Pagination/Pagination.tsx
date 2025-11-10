@@ -12,34 +12,37 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   if (totalPages <= 1) return null;
 
   return (
-    <nav className="flex justify-center items-center space-x-2 my-8">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-4 py-2 text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Previous
-      </button>
-      {pageNumbers.map((number) => (
-        <button
-          key={number}
-          onClick={() => onPageChange(number)}
-          className={`w-10 h-10 rounded-md shadow-sm transition-colors ${
-            currentPage === number
-              ? 'bg-indigo-600 text-white font-bold'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-        >
-          {number}
-        </button>
-      ))}
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-4 py-2 text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Next
-      </button>
+    <nav className="d-flex justify-content-center align-items-center my-4">
+      <ul className="pagination">
+        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+          <button
+            className="page-link"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+        </li>
+        {pageNumbers.map((number) => (
+          <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            <button
+              className="page-link"
+              onClick={() => onPageChange(number)}
+            >
+              {number}
+            </button>
+          </li>
+        ))}
+        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+          <button
+            className="page-link"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </li>
+      </ul>
     </nav>
   );
 };
