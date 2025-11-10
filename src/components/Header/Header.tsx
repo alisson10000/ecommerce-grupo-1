@@ -1,6 +1,7 @@
 import React from 'react';
 import { User } from '../../../src/types';
 import { CartIcon, UserIcon } from '../Icons/icons';
+import { useTheme } from '../../ThemeContext';
 
 interface HeaderProps {
   user: User | null;
@@ -11,20 +12,22 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user, onLoginClick, onCartClick, onLogout, cartItemCount }) => {
+  const { isDark, toggleTheme } = useTheme();
+
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm shadow-md z-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="text-2xl font-bold text-gray-800">
-            <a href="#">Serratec E-Commerce</a>
+    <header className="position-fixed top-0 start-0 end-0 bg-white bg-opacity-75 shadow z-3" style={{backdropFilter: 'blur(4px)'}}>
+      <div className="container-fluid px-3 px-sm-4 px-lg-5">
+        <div className="d-flex align-items-center justify-content-between" style={{height: '4rem'}}>
+          <div className="fs-4 fw-bold text-dark">
+            <a href="#" className="text-decoration-none">Serratec E-Commerce</a>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="d-flex align-items-center gap-3">
             {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-600 hidden sm:block">Welcome, {user.name}</span>
+              <div className="d-flex align-items-center gap-3">
+                <span className="text-secondary d-none d-sm-block">Welcome, {user.name}</span>
                 <button
                   onClick={onLogout}
-                  className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+                  className="btn btn-link text-secondary text-decoration-none p-0"
                 >
                   Logout
                 </button>
@@ -32,17 +35,20 @@ const Header: React.FC<HeaderProps> = ({ user, onLoginClick, onCartClick, onLogo
             ) : (
               <button
                 onClick={onLoginClick}
-                className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+                className="btn btn-link text-secondary text-decoration-none d-flex align-items-center gap-2 p-0"
               >
                 <UserIcon className="w-5 h-5" />
                 <span>Login</span>
               </button>
             )}
-            <div className="h-6 w-px bg-gray-300"></div>
-            <button onClick={onCartClick} className="relative text-gray-700 hover:text-indigo-600 transition-colors">
+            <div className="vr"></div>
+            <button onClick={toggleTheme} className="btn btn-link text-secondary text-decoration-none p-0">
+              {isDark ? '☀️' : '🌙'}
+            </button>
+            <button onClick={onCartClick} className="btn btn-link text-secondary text-decoration-none position-relative p-0">
               <CartIcon className="w-6 h-6" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.75rem'}}>
                   {cartItemCount}
                 </span>
               )}

@@ -41,40 +41,41 @@ const Carousel: React.FC<CarouselProps> = ({ products }) => {
   const currentProduct = products[currentIndex];
 
   return (
-    <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-2xl mb-8 bg-gray-800">
+    <div className="position-relative w-100 rounded shadow mb-4 bg-dark overflow-hidden" style={{height: '16rem'}}>
       {/* Slides */}
       <div
-        className="w-full h-full flex transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        className="d-flex w-100 h-100"
+        style={{ transform: `translateX(-${currentIndex * 100}%)`, transition: 'transform 0.7s ease-in-out' }}
       >
         {products.map((product) => {
           // 🔗 Gera URL da imagem com base no ID
           const imageUrl = `${API_BASE_URL}/imagens/${product.id}.jpg`;
 
           return (
-            <div key={product.id} className="w-full h-full flex-shrink-0 relative">
+            <div key={product.id} className="position-relative w-100 h-100 flex-shrink-0">
               <img
                 src={imageUrl}
                 alt={product.nome}
-                className="w-full h-full object-cover"
+                className="w-100 h-100"
+                style={{objectFit: 'cover'}}
                 onError={(e) => {
                   console.error(`🚨 [Carousel] Erro ao carregar imagem ID=${product.id}`);
                   console.error("URL com erro:", (e.target as HTMLImageElement).src);
                   (e.target as HTMLImageElement).src = '/placeholder.jpg';
                 }}
               />
-              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+              <div className="position-absolute top-0 start-0 end-0 bottom-0 bg-dark bg-opacity-25"></div>
             </div>
           );
         })}
       </div>
 
       {/* Texto sobreposto */}
-      <div className="absolute bottom-0 left-0 p-4 md:p-8 text-white bg-gradient-to-t from-black/70 to-transparent">
-        <h2 className="text-2xl md:text-4xl font-bold mb-2">
+      <div className="position-absolute bottom-0 start-0 p-3 p-md-4 text-white" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)'}}>
+        <h2 className="fs-3 fs-md-1 fw-bold mb-2">
           {currentProduct.nome}
         </h2>
-        <p className="text-lg md:text-2xl font-light">
+        <p className="fs-5 fs-md-2 fw-light">
           {typeof currentProduct.preco === 'number'
             ? `R$ ${currentProduct.preco.toFixed(2)}`
             : 'R$ 0,00'}
@@ -82,7 +83,7 @@ const Carousel: React.FC<CarouselProps> = ({ products }) => {
       </div>
 
       {/* Indicadores */}
-      <div className="absolute bottom-4 right-4 flex space-x-2">
+      <div className="position-absolute bottom-0 end-0 d-flex gap-2 p-2">
         {products.map((_, index) => (
           <button
             key={index}
@@ -90,9 +91,8 @@ const Carousel: React.FC<CarouselProps> = ({ products }) => {
               console.log(`🔘 [Carousel] Mudando para slide ${index + 1}`);
               setCurrentIndex(index);
             }}
-            className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-              currentIndex === index ? 'bg-white' : 'bg-white/50'
-            }`}
+            className={`rounded-circle border-0 ${currentIndex === index ? 'bg-white' : 'bg-white opacity-50'}`}
+            style={{width: '0.75rem', height: '0.75rem', transition: 'background-color 0.3s'}}
           ></button>
         ))}
       </div>

@@ -5,9 +5,11 @@ import Header from '../components/Header/Header';
 import LoginModal from '../components/LoginModal/LoginModal';
 import CartSidebar from '../components/CartSidebar/CartSidebar';
 import { User, CartItem } from '../types';
+import { useTheme } from '../ThemeContext';
 
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
@@ -52,7 +54,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="font-sans text-gray-900">
+    <div className={`font-sans text-gray-900 ${isDark ? 'dark-mode' : ''}`}>
       <Header
         user={currentUser}
         onLoginClick={() => setLoginModalOpen(true)}

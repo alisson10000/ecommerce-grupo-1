@@ -159,7 +159,7 @@ const Home: React.FC = () => {
   });
 
   return (
-    <div className="font-sans text-gray-900">
+    <div className="font-family-sans-serif text-dark">
       {/* ✅ HEADER */}
       <Header
         user={currentUser}
@@ -176,17 +176,18 @@ const Home: React.FC = () => {
       />
 
       {/* ✅ CONTEÚDO */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+      <main className="container-fluid px-3 px-sm-4 px-lg-5 pt-5 pb-4">
         <Carousel products={featuredProducts} />
 
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">Todos os Produtos</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <h2 className="fs-1 fw-bold text-dark mb-4">Todos os Produtos</h2>
+        <div className="row g-3">
           {currentProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={handleAddToCart}
-            />
+            <div key={product.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
+              <ProductCard
+                product={product}
+                onAddToCart={handleAddToCart}
+              />
+            </div>
           ))}
         </div>
 
@@ -218,7 +219,7 @@ const Home: React.FC = () => {
 
       {/* ✅ ALERTA DE SUCESSO */}
       {saleSuccessMessage && (
-        <div className="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-lg animate-fade-in">
+        <div className="position-fixed bottom-0 end-0 bg-success text-white p-3 rounded shadow" style={{margin: '1rem'}}>
           {saleSuccessMessage}
         </div>
       )}
