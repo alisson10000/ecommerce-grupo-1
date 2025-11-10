@@ -18,35 +18,40 @@ const PedidoPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [pedidoConfirmado, setPedidoConfirmado] = useState<any>(null);
 
-  // mesmos modais e estados do Header
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isCartOpen, setCartOpen] = useState(false);
-
-  // quantidade de itens no carrinho (para o ícone do header)
   const [cartItemCount, setCartItemCount] = useState(0);
 
   // 🧭 Recupera o carrinho vindo da Home ou do localStorage
   useEffect(() => {
-    console.log('📦 Verificando itens recebidos via navegação...', location.state);
+    console.group("🛒 [PedidoPage] Carregando itens do carrinho...");
     const itensRecebidos = (location.state as any)?.cart as CartItem[] | undefined;
 
     if (itensRecebidos && itensRecebidos.length > 0) {
-      console.log('✅ Itens recebidos via navigate:', itensRecebidos);
+      console.log("✅ Itens recebidos via navigate:", itensRecebidos);
       setItens(itensRecebidos);
-      setCartItemCount(itensRecebidos.reduce((acc, i) => acc + i.quantity, 0));
       localStorage.setItem('cart', JSON.stringify(itensRecebidos));
     } else {
       const cartSalvo = JSON.parse(localStorage.getItem('cart') || '[]');
-      console.log('🗃️ Itens carregados do localStorage:', cartSalvo);
+      console.log("📦 Itens carregados do localStorage:", cartSalvo);
       setItens(cartSalvo);
-      setCartItemCount(cartSalvo.reduce((acc, i) => acc + i.quantity, 0));
     }
+    console.groupEnd();
   }, [location.state]);
 
-  // 💰 Recalcula total
+  // 💰 Recalcula total (corrigido para aceitar `preco` ou `price`)
   useEffect(() => {
-    const calcTotal = itens.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    setTotal(calcTotal);
+    const totalCalc = itens.reduce((sum, item) => {
+      const precoBase = item.preco ?? item.price ?? 0;
+      const subtotalItem = precoBase * item.quantity;
+      console.log(`🧾 Item ${item.id}: ${item.nome || item.name} → ${precoBase} x ${item.quantity} = ${subtotalItem}`);
+      return sum + subtotalItem;
+    }, 0);
+
+    setTotal(totalCalc);
+    setCartItemCount(itens.reduce((sum, i) => sum + i.quantity, 0));
+
+    console.log("💰 [PedidoPage] Total atualizado:", totalCalc.toFixed(2));
   }, [itens]);
 
   // 👤 Verifica se o usuário está logado
@@ -56,6 +61,7 @@ const PedidoPage: React.FC = () => {
       try {
         const decoded: any = jwtDecode(token);
         setCurrentUser({ name: decoded.sub || 'Vendedor' });
+        console.log("👤 [PedidoPage] Usuário logado:", decoded.sub);
       } catch (err) {
         console.error('❌ Erro ao decodificar token:', err);
       }
@@ -64,13 +70,13 @@ const PedidoPage: React.FC = () => {
 
   // 🔐 Login bem-sucedido
   const handleLoginSuccess = (token: string) => {
-    console.log('🟢 Login bem-sucedido no PedidoPage. Token recebido:', token);
+    console.log("🔑 [PedidoPage] Login bem-sucedido, token recebido:", token);
     localStorage.setItem('token', token);
     try {
       const decoded: any = jwtDecode(token);
       setCurrentUser({ name: decoded.sub || 'Vendedor' });
     } catch (err) {
-      console.error('Erro ao decodificar token:', err);
+      console.error("❌ Erro ao decodificar token:", err);
     }
   };
 
@@ -78,15 +84,26 @@ const PedidoPage: React.FC = () => {
   const handleConfirmarPedido = async () => {
     const vendedor = currentUser?.name || 'Vendedor';
 
+    const itensFormatados = itens.map((item) => ({
+      idProduto: item.id,
+      nome: item.name || item.nome,
+      preco: item.preco ?? item.price ?? 0,
+      quantidade: item.quantity,
+    }));
+
     const pedido = {
       vendedor,
-      itens,
+      itens: itensFormatados,
       total,
       pagamento,
       observacao,
     };
 
-    console.log('🟢 Enviando pedido:', pedido);
+    console.group("📤 [PedidoPage] Enviando pedido...");
+    console.log("👤 Vendedor:", vendedor);
+    console.log("🧾 Itens formatados:", itensFormatados);
+    console.log("💰 Total:", total.toFixed(2));
+    console.groupEnd();
 
     try {
       const token = localStorage.getItem('token');
@@ -94,16 +111,16 @@ const PedidoPage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log('✅ Pedido confirmado:', response.data);
+      console.log("✅ Pedido confirmado:", response.data);
       setPedidoConfirmado(response.data);
       localStorage.removeItem('cart');
-    } catch (error) {
-      console.error('❌ Erro ao confirmar pedido:', error);
+    } catch (error: any) {
+      console.error("❌ Erro ao confirmar pedido:", error);
       alert('Erro ao enviar o pedido. Verifique o console.');
     }
   };
 
-  // 🟩 Tela de sucesso do pedido
+  // ✅ Tela de sucesso do pedido
   if (pedidoConfirmado) {
     return (
       <div className="font-sans text-gray-900">
@@ -133,7 +150,7 @@ const PedidoPage: React.FC = () => {
     );
   }
 
-  // 🧾 Tela principal de pedido
+  // 🧾 Tela principal
   return (
     <div className="font-sans text-gray-900">
       <Header
@@ -143,8 +160,7 @@ const PedidoPage: React.FC = () => {
         onLogout={() => {
           setCurrentUser(null);
           localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          navigate('/'); // 👈 redireciona para Home
+          navigate('/');
         }}
         cartItemCount={cartItemCount}
       />
@@ -157,12 +173,15 @@ const PedidoPage: React.FC = () => {
         ) : (
           <>
             <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-              {itens.map((item) => (
-                <div key={item.id} className="flex justify-between border-b py-2">
-                  <span>{item.name} x{item.quantity}</span>
-                  <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-              ))}
+              {itens.map((item) => {
+                const precoItem = item.preco ?? item.price ?? 0;
+                return (
+                  <div key={item.id} className="flex justify-between border-b py-2">
+                    <span>{item.name || item.nome} x{item.quantity}</span>
+                    <span>R$ {(precoItem * item.quantity).toFixed(2)}</span>
+                  </div>
+                );
+              })}
               <div className="text-right font-bold text-xl mt-4">
                 Total: R$ {total.toFixed(2)}
               </div>
@@ -202,7 +221,6 @@ const PedidoPage: React.FC = () => {
         )}
       </main>
 
-      {/* 🔹 Modais compatíveis com o Header */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setLoginModalOpen(false)}
