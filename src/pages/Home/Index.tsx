@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
+
 import Header from '../../components/Header/Header';
 import Carousel from '../../components/Carrousel/Carousel';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -8,11 +10,15 @@ import Pagination from '../../components/Pagination/Pagination';
 import LoginModal from '../../components/LoginModal/LoginModal';
 import CartSidebar from '../../components/CartSidebar/CartSidebar';
 import { Product, User, CartItem } from '../../types';
-import { MOCK_PRODUCTS, PRODUCTS_PER_PAGE, FEATURED_PRODUCTS_IDS } from '../../constants';
+
+const API_BASE_URL = "http://localhost:8080";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
+  // Estados principais
+  const [products, setProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
@@ -20,98 +26,156 @@ const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [saleSuccessMessage, setSaleSuccessMessage] = useState<string | null>(null);
 
-  const featuredProducts = useMemo(
-    () => MOCK_PRODUCTS.filter((p) => FEATURED_PRODUCTS_IDS.includes(p.id)),
-    []
-  );
+  const PRODUCTS_PER_PAGE = 8;
 
-  const totalPages = Math.ceil(MOCK_PRODUCTS.length / PRODUCTS_PER_PAGE);
+  // 🧩 Carrega carrinho salvo no localStorage
+  useEffect(() => {
+    const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    if (savedCart.length > 0) {
+      console.log("📦 [Home] Carrinho recuperado:", savedCart);
+      setCart(savedCart);
+    }
+  }, []);
 
+  // 🟢 Busca produtos do backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log("🟡 [Home] Buscando produtos...");
+        const response = await axios.get(`${API_BASE_URL}/produtos`);
+        const data = response.data;
+
+        if (!Array.isArray(data)) {
+          console.error("🔴 Backend retornou formato inválido:", data);
+          return;
+        }
+
+        setProducts(data);
+        setFeaturedProducts(data.slice(0, 4));
+        console.log(`🟢 ${data.length} produtos carregados com sucesso.`);
+      } catch (error) {
+        console.error("🚨 Erro ao buscar produtos:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // 📄 Paginação
+  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
   const currentProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-    const endIndex = startIndex + PRODUCTS_PER_PAGE;
-    return MOCK_PRODUCTS.slice(startIndex, endIndex);
-  }, [currentPage]);
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const end = start + PRODUCTS_PER_PAGE;
+    return products.slice(start, end);
+  }, [currentPage, products]);
 
+  // 🛒 Contagem total de itens no carrinho
   const cartItemCount = useMemo(() => {
     return cart.reduce((count, item) => count + item.quantity, 0);
   }, [cart]);
 
-  // 🛒 Adicionar produto ao carrinho
+  // 🛍️ Adicionar produto ao carrinho
   const handleAddToCart = (product: Product) => {
+    console.log("🛒 [Home] Adicionando produto:", product);
+
+    const newItem: CartItem = { ...product, quantity: 1 };
+
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      const existing = prevCart.find((item) => item.id === newItem.id);
+      let updated;
+
+      if (existing) {
+        updated = prevCart.map((item) =>
+          item.id === newItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
         );
+      } else {
+        updated = [...prevCart, newItem];
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+
+      localStorage.setItem('cart', JSON.stringify(updated));
+      return updated;
     });
+
+    // 👇 Abre automaticamente o sidebar quando adiciona o produto
     setCartOpen(true);
   };
 
-  // 🧮 Atualizar quantidade do carrinho
+  // 🔢 Atualiza quantidade
   const handleUpdateCartQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
-    } else {
-      setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
-        )
-      );
-    }
+    console.log(`🔄 [Home] Atualizando quantidade ID=${productId} → ${newQuantity}`);
+    setCart((prev) => {
+      const updated =
+        newQuantity <= 0
+          ? prev.filter((item) => item.id !== productId)
+          : prev.map((item) =>
+              item.id === productId ? { ...item, quantity: newQuantity } : item
+            );
+
+      localStorage.setItem('cart', JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  // 💰 Finalizar venda
+  // 💰 Finalizar venda → redireciona para /pedido
   const handleFinalizeSale = () => {
     if (!currentUser) {
-      alert('Faça login para finalizar a venda.');
+      console.warn("⚠️ [Home] Usuário não logado → abrir modal de login");
       setCartOpen(false);
       setLoginModalOpen(true);
       return;
     }
-    setCart([]);
-    setCartOpen(false);
-    setSaleSuccessMessage('Venda finalizada com sucesso!');
+
+    console.log("✅ [Home] Redirecionando com carrinho:", cart);
+    navigate('/pedido', { state: { cart } });
   };
 
   // 👤 Login bem-sucedido
   const handleLoginSuccess = (token: string) => {
-    console.log('🟢 Login bem-sucedido. Redirecionando para página de pedido...');
+    console.log("🔑 [Home] Login bem-sucedido:", token);
     localStorage.setItem('token', token);
 
     try {
       const decoded: any = jwtDecode(token);
       setCurrentUser({ name: decoded.sub || 'Vendedor' });
     } catch (err) {
-      console.error('Erro ao decodificar token:', err);
+      console.error("🚨 Erro ao decodificar token:", err);
     }
-
-navigate('/pedido', { state: { cart } });
-
   };
 
+  // ⏳ Limpa mensagem de sucesso
   useEffect(() => {
     if (saleSuccessMessage) {
-      const timer = setTimeout(() => {
-        setSaleSuccessMessage(null);
-      }, 3000);
+      const timer = setTimeout(() => setSaleSuccessMessage(null), 3000);
       return () => clearTimeout(timer);
     }
   }, [saleSuccessMessage]);
 
+  console.log("🎨 [Render] Home:", {
+    produtos: products.length,
+    carrinho: cart.length,
+    sidebar: isCartOpen ? "ABERTO" : "FECHADO",
+  });
+
   return (
     <div className="font-sans text-gray-900">
+      {/* ✅ HEADER */}
       <Header
         user={currentUser}
         onLoginClick={() => setLoginModalOpen(true)}
-        onCartClick={() => setCartOpen(true)}
-        onLogout={() => setCurrentUser(null)}
+        onCartClick={() => {
+          console.log("🧭 [Home] Botão do carrinho clicado → abrindo sidebar");
+          setCartOpen(true);
+        }}
+        onLogout={() => {
+          setCurrentUser(null);
+          localStorage.removeItem('token');
+        }}
         cartItemCount={cartItemCount}
       />
 
+      {/* ✅ CONTEÚDO */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <Carousel products={featuredProducts} />
 
@@ -121,28 +185,38 @@ navigate('/pedido', { state: { cart } });
             <ProductCard
               key={product.id}
               product={product}
-              onAddToCart={handleAddToCart} // ✅ voltou a funcionar
+              onAddToCart={handleAddToCart}
             />
           ))}
         </div>
 
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </main>
 
+      {/* ✅ MODAL DE LOGIN */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
 
+      {/* ✅ SIDEBAR DO CARRINHO */}
       <CartSidebar
         isOpen={isCartOpen}
-        onClose={() => setCartOpen(false)}
+        onClose={() => {
+          console.log("🧩 [Home] Fechando sidebar");
+          setCartOpen(false);
+        }}
         cartItems={cart}
         onUpdateQuantity={handleUpdateCartQuantity}
         onFinalizeSale={handleFinalizeSale}
       />
 
+      {/* ✅ ALERTA DE SUCESSO */}
       {saleSuccessMessage && (
         <div className="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-lg animate-fade-in">
           {saleSuccessMessage}
