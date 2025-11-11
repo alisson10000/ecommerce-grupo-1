@@ -1,19 +1,26 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import MainLayout from "../../src/Layout/MainLayout";
-import Home from "../../src/pages/Home/Index";
-import PedidoPage from "../../src/pages/Pedido/Index";
+
+// 🧩 Layout principal
+import MainLayout from "../Layout/MainLayout";
+
+// 🏠 Páginas
+import Home from "../pages/Home/Index";
+import PedidoPage from "../pages/Pedido/Index";
+import CategoriasPage from "../pages/Categorias/Index";
+import ClientesPage from "../pages/Clientes/Index";
+import UsuariosPage from "../pages/Usuarios/Index"; // ✅ nova importação
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* O MainLayout é o “casco” que envolve todas as páginas */}
-      <Route path="/" element={<MainLayout />}>
-        {/* 👇 Rota raiz ("/") */}
-        <Route index element={<Home />} />
-
-        {/* 👇 Outras rotas dentro do layout */}
-        <Route path="pedido" element={<PedidoPage />} />
+      {/* Layout principal engloba todas as rotas protegidas */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/pedido" element={<PedidoPage />} />
+        <Route path="/categorias" element={<CategoriasPage />} />
+        <Route path="/clientes" element={<ClientesPage />} />
+        <Route path="/usuarios" element={<UsuariosPage />} /> {/* ✅ nova rota */}
       </Route>
     </Routes>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import * as bootstrap from "bootstrap"; // ✅ importante para controlar o Offcanvas
 
 import Header from "../components/Header/Header";
 import Sidebar from "../components/Sidebar/Sidebar";
@@ -53,52 +54,59 @@ const MainLayout: React.FC = () => {
     setLoginModalOpen(false);
   };
 
-  // 🚪 Logout
-  // 🚪 Logout
-const handleLogout = () => {
+  // 🚪 Logout (Header e Sidebar compartilham a mesma função)
+ const handleLogout = () => {
+    console.log("🚪 handleLogout executado no MainLayout");
   const confirmou = window.confirm("Deseja realmente sair?");
   if (!confirmou) return;
 
-  // 🔐 Limpa dados do usuário
+  // Limpa dados
   localStorage.removeItem("token");
-  setCurrentUser(null);
-
-  // 🧹 Limpa o carrinho de compras
   localStorage.removeItem("cart");
-  setCart([]); // zera no estado
-  setCartOpen(false); // fecha o painel se estiver aberto
+  setCurrentUser(null);
+  setCart([]);
+  setCartOpen(false);
 
-  // 🔁 Redireciona para a home
-  navigate("/", { replace: true });
+  // Fecha o menu lateral se estiver aberto
+  const offcanvasEl = document.getElementById("sidebarMenu");
+  if (offcanvasEl) {
+    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+    if (bsOffcanvas) bsOffcanvas.hide();
+  }
+
+  console.log("🚪 Logout completo, navegando para /");
+
+  // ✅ Redireciona
+  setTimeout(() => navigate("/"), 250);
+  console.log("🚪 handleLogout executado no MainLayout");
 };
-
 
   // 🧮 Total de itens no carrinho (para o Header)
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // 🛒 Adicionar produto ao carrinho (função GLOBAL)
+  // 🛒 Adicionar produto ao carrinho
   const addToCart = (product: Product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       const updated = existing
         ? prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+            item.id === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
         : [
-          ...prev,
-          {
-            ...product,
-            quantity: 1,
-          },
-        ];
+            ...prev,
+            {
+              ...product,
+              quantity: 1,
+            },
+          ];
 
       localStorage.setItem("cart", JSON.stringify(updated));
       return updated;
     });
 
-    // Abre o carrinho ao adicionar
+    // Abre o carrinho automaticamente
     setCartOpen(true);
   };
 
@@ -109,8 +117,8 @@ const handleLogout = () => {
         qty <= 0
           ? prev.filter((item) => item.id !== id)
           : prev.map((item) =>
-            item.id === id ? { ...item, quantity: qty } : item
-          );
+              item.id === id ? { ...item, quantity: qty } : item
+            );
 
       localStorage.setItem("cart", JSON.stringify(updated));
       return updated;
@@ -130,8 +138,9 @@ const handleLogout = () => {
 
   return (
     <div
-      className={`d-flex flex-column min-vh-100 ${isDark ? "bg-dark text-light" : "bg-light text-dark"
-        }`}
+      className={`d-flex flex-column min-vh-100 ${
+        isDark ? "bg-dark text-light" : "bg-light text-dark"
+      }`}
     >
       {/* HEADER FIXO */}
       <Header
@@ -149,7 +158,6 @@ const handleLogout = () => {
 
       {/* CONTEÚDO DAS PÁGINAS */}
       <main className="flex-grow-1 pt-4 mt-4">
-        {/* 👇 Passamos addToCart via contexto para as páginas (Home, etc.) */}
         <Outlet context={{ addToCart }} />
       </main>
 
@@ -167,9 +175,8 @@ const handleLogout = () => {
         cartItems={cart}
         onUpdateQuantity={handleUpdateCartQuantity}
         onFinalizeSale={handleFinalizeSale}
-        onRequireLogin={() => setLoginModalOpen(true)} // 👈 NOVO
+        onRequireLogin={() => setLoginModalOpen(true)}
       />
-
     </div>
   );
 };
