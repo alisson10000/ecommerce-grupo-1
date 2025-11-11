@@ -1,88 +1,100 @@
-import React from 'react';
-import { ClockIcon, PhoneIcon, EmailIcon, LocationIcon } from '../Icons/icons';
+import React from "react";
+import { ClockIcon, PhoneIcon, EmailIcon, LocationIcon } from "../Icons/icons";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="mt-4 bg-primary text-white py-4">
+    <footer
+      className="mt-5 text-white py-4 shadow-inner"
+      style={{
+        background: "linear-gradient(90deg, #0d6efd, #004aad)", // 🔵 Gradiente azul institucional
+      }}
+    >
       <div className="container">
-        {/* Grid principal */}
+        {/* GRID PRINCIPAL */}
         <div className="row mb-4 justify-content-center">
-          <div className="col-md-6 col-12">
-            {/* Links Úteis */}
-            <div>
-              <h3 className="h5 fw-semibold mb-2">Links Úteis</h3>
-              <ul className="list-unstyled small">
-                <li>
-                  <a href="/products" className="text-light text-decoration-none">
-                    Produtos
-                  </a>
-                </li>
-                <li>
-                  <a href="/categories" className="text-light text-decoration-none">
-                    Categorias
-                  </a>
-                </li>
-                <li>
-                  <a href="/clientes" className="text-light text-decoration-none">
-                    Área do Cliente
-                  </a>
-                </li>
-                <li>
-                  <a href="/users" className="text-light text-decoration-none">
-                    Portal do Vendedor
-                  </a>
-                </li>
-              </ul>
-            </div>
+          {/* LINKS ÚTEIS */}
+          <div className="col-12 col-md-5 mb-3">
+            <h5 className="fw-semibold mb-2">Links Úteis</h5>
+            <ul className="list-unstyled small mb-0">
+              <li className="mb-1">
+                <a href="/products" className="link-light text-decoration-none">
+                  Produtos
+                </a>
+              </li>
+              <li className="mb-1">
+                <a href="/categories" className="link-light text-decoration-none">
+                  Categorias
+                </a>
+              </li>
+              <li className="mb-1">
+                <a href="/clientes" className="link-light text-decoration-none">
+                  Área do Cliente
+                </a>
+              </li>
+              <li className="mb-1">
+                <a href="/users" className="link-light text-decoration-none">
+                  Portal do Vendedor
+                </a>
+              </li>
+            </ul>
           </div>
 
-          <div className="col-md-6 col-12">
-            {/* Contato */}
-            <div>
-              <h3 className="h5 fw-semibold mb-2">Entre em Contato</h3>
-              <ul className="list-unstyled small text-light">
-                <li className="d-flex align-items-center mb-1">
-                  <ClockIcon className="me-2" style={{ width: '16px', height: '16px' }} />
-                  <span>Segunda a Sexta: 9h às 18h</span>
-                </li>
-                <li className="d-flex align-items-center mb-1">
-                  <PhoneIcon className="me-2" style={{ width: '16px', height: '16px' }} />
-                  <span>Tel: (24) 9999-9999</span>
-                </li>
-                <li className="d-flex align-items-center mb-1">
-                  <EmailIcon className="me-2" style={{ width: '16px', height: '16px' }} />
-                  <span>Email: contato@serratec.com</span>
-                </li>
-                <li className="d-flex align-items-center mb-1">
-                  <LocationIcon className="me-2" style={{ width: '16px', height: '16px' }} />
-                  <span>Petrópolis, RJ</span>
-                </li>
-              </ul>
-              <div className="mt-2 d-flex gap-3">
-                <a href="#" className="small text-light text-decoration-none">
-                  LinkedIn
-                </a>
-                <a href="#" className="small text-light text-decoration-none">
-                  Instagram
-                </a>
-                <a href="#" className="small text-light text-decoration-none">
-                  Facebook
-                </a>
-              </div>
+          {/* CONTATO */}
+          <div className="col-12 col-md-5 mb-3">
+            <h5 className="fw-semibold mb-2">Entre em Contato</h5>
+            <ul className="list-unstyled small mb-0">
+              <li className="d-flex align-items-center mb-1">
+                <ClockIcon className="me-2" style={{ width: 16, height: 16 }} />
+                Segunda a Sexta: 9h às 18h
+              </li>
+              <li className="d-flex align-items-center mb-1">
+                <PhoneIcon className="me-2" style={{ width: 16, height: 16 }} />
+                Tel: (24) 9999-9999
+              </li>
+              <li className="d-flex align-items-center mb-1">
+                <EmailIcon className="me-2" style={{ width: 16, height: 16 }} />
+                contato@serratec.com
+              </li>
+              <li className="d-flex align-items-center mb-1">
+                <LocationIcon className="me-2" style={{ width: 16, height: 16 }} />
+                Petrópolis, RJ
+              </li>
+            </ul>
+
+            {/* REDES SOCIAIS */}
+            <div className="mt-2 d-flex gap-3 small">
+              <a href="#" className="link-light text-decoration-none">
+                LinkedIn
+              </a>
+              <a href="#" className="link-light text-decoration-none">
+                Instagram
+              </a>
+              <a href="#" className="link-light text-decoration-none">
+                Facebook
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Linha divisória mais sutil */}
-        <hr className="my-3" />
-        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center small">
+        {/* LINHA DIVISÓRIA + DIREITOS */}
+        <hr className="border-light opacity-25" />
+
+        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center text-white-50 small">
           <div className="fw-medium mb-2 mb-sm-0">
-            © {new Date().getFullYear()} Serratec E-Commerce. Todos os direitos reservados.
+            © {new Date().getFullYear()} Serratec E-Commerce. Todos os direitos
+            reservados.
           </div>
-          <div className="d-flex gap-3 text-light">
-            <a href="#" className="text-decoration-none">Termos de Uso</a>
-            <a href="#" className="text-decoration-none">Política de Privacidade</a>
-            <a href="#" className="text-decoration-none">Cookies</a>
+
+          <div className="d-flex gap-3">
+            <a href="#" className="link-light text-decoration-none">
+              Termos de Uso
+            </a>
+            <a href="#" className="link-light text-decoration-none">
+              Política de Privacidade
+            </a>
+            <a href="#" className="link-light text-decoration-none">
+              Cookies
+            </a>
           </div>
         </div>
       </div>

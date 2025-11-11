@@ -17,7 +17,10 @@ export interface User {
   name: string;
 }
 
-// Item de carrinho herda de Product
-export interface CartItem extends Product {
+// 🧩 Item de carrinho otimizado (não herda de Product para evitar dados desnecessários)
+export interface CartItem {
+  id: number;
+  nome: string;
+  preco: number;
   quantity: number;
 }

@@ -1,20 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import api from '../../services/api';
-import Header from '../../components/Header/Header';
-import LoginModal from '../../components/LoginModal/LoginModal';
-import CartSidebar from '../../components/CartSidebar/CartSidebar';
-import { CartItem, User } from '../../types';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import api from "../../services/api";
+import Header from "../../components/Header/Header";
+import LoginModal from "../../components/LoginModal/LoginModal";
+import CartSidebar from "../../components/CartSidebar/CartSidebar";
+import Footer from "../../components/Footer/Footer";
+import { CartItem, User } from "../../types";
+import { PlusIcon, MinusIcon, TrashIcon } from "../../components/Icons/icons";
+
+const API_BASE_URL = "http://localhost:8080";
+
+interface Cliente {
+  id: number;
+  nome: string;
+}
 
 const PedidoPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 📦 Estados principais
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState<string>("");
+
   const [itens, setItens] = useState<CartItem[]>([]);
-  const [pagamento, setPagamento] = useState('dinheiro');
-  const [observacao, setObservacao] = useState('');
+  const [pagamento, setPagamento] = useState("dinheiro");
+  const [observacao, setObservacao] = useState("");
   const [total, setTotal] = useState(0);
   const [pedidoConfirmado, setPedidoConfirmado] = useState<any>(null);
 
@@ -22,201 +35,303 @@ const PedidoPage: React.FC = () => {
   const [isCartOpen, setCartOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
 
-  // 🧭 Recupera o carrinho vindo da Home ou do localStorage
+  // 🧭 Recupera o carrinho
   useEffect(() => {
-    console.group("🛒 [PedidoPage] Carregando itens do carrinho...");
     const itensRecebidos = (location.state as any)?.cart as CartItem[] | undefined;
-
-    if (itensRecebidos && itensRecebidos.length > 0) {
-      console.log("✅ Itens recebidos via navigate:", itensRecebidos);
+    if (itensRecebidos?.length) {
       setItens(itensRecebidos);
-      localStorage.setItem('cart', JSON.stringify(itensRecebidos));
+      localStorage.setItem("cart", JSON.stringify(itensRecebidos));
     } else {
-      const cartSalvo = JSON.parse(localStorage.getItem('cart') || '[]');
-      console.log("📦 Itens carregados do localStorage:", cartSalvo);
+      const cartSalvo = JSON.parse(localStorage.getItem("cart") || "[]");
       setItens(cartSalvo);
     }
-    console.groupEnd();
   }, [location.state]);
 
-  // 💰 Recalcula total (corrigido para aceitar `preco` ou `price`)
+  // 💰 Recalcula total e contador
   useEffect(() => {
     const totalCalc = itens.reduce((sum, item) => {
-      const precoBase = item.preco ?? item.price ?? 0;
-      const subtotalItem = precoBase * item.quantity;
-      console.log(`🧾 Item ${item.id}: ${item.nome || item.name} → ${precoBase} x ${item.quantity} = ${subtotalItem}`);
-      return sum + subtotalItem;
+      const preco = item.preco ?? item.price ?? 0;
+      return sum + preco * item.quantity;
     }, 0);
-
     setTotal(totalCalc);
     setCartItemCount(itens.reduce((sum, i) => sum + i.quantity, 0));
-
-    console.log("💰 [PedidoPage] Total atualizado:", totalCalc.toFixed(2));
   }, [itens]);
 
-  // 👤 Verifica se o usuário está logado
+  // 👤 Verifica login JWT
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
-        setCurrentUser({ name: decoded.sub || 'Vendedor' });
-        console.log("👤 [PedidoPage] Usuário logado:", decoded.sub);
+        setCurrentUser({ name: decoded.sub || "Vendedor" });
       } catch (err) {
-        console.error('❌ Erro ao decodificar token:', err);
+        console.error("Erro ao decodificar token:", err);
       }
     }
   }, []);
 
-  // 🔐 Login bem-sucedido
-  const handleLoginSuccess = (token: string) => {
-    console.log("🔑 [PedidoPage] Login bem-sucedido, token recebido:", token);
-    localStorage.setItem('token', token);
-    try {
-      const decoded: any = jwtDecode(token);
-      setCurrentUser({ name: decoded.sub || 'Vendedor' });
-    } catch (err) {
-      console.error("❌ Erro ao decodificar token:", err);
-    }
-  };
+  // 🔄 Carrega lista de clientes
+  useEffect(() => {
+    const fetchClientes = async () => {
+      try {
+        const response = await api.get("/clientes");
+        setClientes(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar clientes:", error);
+      }
+    };
+    fetchClientes();
+  }, []);
 
-  // 💾 Envia o pedido para o backend
+  // 💾 Confirmar pedido
   const handleConfirmarPedido = async () => {
-    const vendedor = currentUser?.name || 'Vendedor';
+    if (!clienteSelecionado) {
+      alert("Selecione um cliente antes de confirmar o pedido.");
+      return;
+    }
 
+    const vendedor = currentUser?.name || "Vendedor";
     const itensFormatados = itens.map((item) => ({
       idProduto: item.id,
-      nome: item.name || item.nome,
+      nome: item.nome || item.name,
       preco: item.preco ?? item.price ?? 0,
       quantidade: item.quantity,
     }));
 
     const pedido = {
       vendedor,
+      clienteId: parseInt(clienteSelecionado),
       itens: itensFormatados,
       total,
       pagamento,
       observacao,
     };
 
-    console.group("📤 [PedidoPage] Enviando pedido...");
-    console.log("👤 Vendedor:", vendedor);
-    console.log("🧾 Itens formatados:", itensFormatados);
-    console.log("💰 Total:", total.toFixed(2));
-    console.groupEnd();
-
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.post('/pedidos', pedido, {
+      const token = localStorage.getItem("token");
+      const response = await api.post("/pedidos", pedido, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("✅ Pedido confirmado:", response.data);
       setPedidoConfirmado(response.data);
-      localStorage.removeItem('cart');
-    } catch (error: any) {
-      console.error("❌ Erro ao confirmar pedido:", error);
-      alert('Erro ao enviar o pedido. Verifique o console.');
+      localStorage.removeItem("cart");
+    } catch (error) {
+      console.error("Erro ao confirmar pedido:", error);
+      alert("Erro ao enviar o pedido. Verifique o console.");
     }
   };
 
-  // ✅ Tela de sucesso do pedido
+  // ✅ Tela de sucesso
   if (pedidoConfirmado) {
     return (
-      <div className="font-sans text-gray-900">
+      <>
         <Header
           user={currentUser}
           onLoginClick={() => setLoginModalOpen(true)}
           onCartClick={() => setCartOpen(true)}
           onLogout={() => {
             setCurrentUser(null);
-            localStorage.removeItem('token');
+            localStorage.removeItem("token");
           }}
           cartItemCount={cartItemCount}
         />
 
-        <div className="p-6 text-center mt-24">
-          <h1 className="text-2xl font-bold text-green-600 mb-4">Pedido realizado com sucesso!</h1>
-          <p>Número do pedido: <strong>{pedidoConfirmado.id}</strong></p>
-          <p>Total: R$ {pedidoConfirmado.total.toFixed(2)}</p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
-          >
-            Voltar para o Início
-          </button>
+        <div className="container text-center mt-5 pt-5">
+          <div className="alert alert-success p-5 shadow-sm">
+            <h2 className="fw-bold text-success mb-3">
+              Pedido realizado com sucesso!
+            </h2>
+            <p>
+              Número do pedido: <strong>{pedidoConfirmado.id}</strong>
+            </p>
+            <p>Total: R$ {pedidoConfirmado.total.toFixed(2)}</p>
+            <button
+              onClick={() => navigate("/")}
+              className="btn btn-primary mt-3"
+            >
+              Voltar para o Início
+            </button>
+          </div>
         </div>
-      </div>
+
+        <Footer />
+      </>
     );
   }
 
   // 🧾 Tela principal
   return (
-    <div className="font-sans text-gray-900">
+    <>
       <Header
         user={currentUser}
         onLoginClick={() => setLoginModalOpen(true)}
         onCartClick={() => setCartOpen(true)}
         onLogout={() => {
           setCurrentUser(null);
-          localStorage.removeItem('token');
-          navigate('/');
+          localStorage.removeItem("token");
+          navigate("/");
         }}
         cartItemCount={cartItemCount}
       />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
-        <h1 className="text-3xl font-bold mb-6">Resumo do Pedido</h1>
+      <main className="container mt-5 pt-5 pb-5">
+        <h1 className="fw-bold mb-4 text-primary">Resumo do Pedido</h1>
 
         {itens.length === 0 ? (
-          <p className="text-gray-500">Nenhum item no pedido.</p>
+          <div className="alert alert-warning">Nenhum item no pedido.</div>
         ) : (
           <>
-            <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-              {itens.map((item) => {
-                const precoItem = item.preco ?? item.price ?? 0;
-                return (
-                  <div key={item.id} className="flex justify-between border-b py-2">
-                    <span>{item.name || item.nome} x{item.quantity}</span>
-                    <span>R$ {(precoItem * item.quantity).toFixed(2)}</span>
-                  </div>
-                );
-              })}
-              <div className="text-right font-bold text-xl mt-4">
-                Total: R$ {total.toFixed(2)}
+            {/* 🧍 Cliente */}
+            <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                <label className="form-label fw-semibold">Cliente</label>
+                <select
+                  className="form-select"
+                  value={clienteSelecionado}
+                  onChange={(e) => setClienteSelecionado(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione um cliente...</option>
+                  {clientes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nome}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-              <label className="block mb-2 font-semibold">Forma de Pagamento</label>
-              <select
-                value={pagamento}
-                onChange={(e) => setPagamento(e.target.value)}
-                className="border p-2 rounded w-full"
+            {/* 🛍️ Itens com controle de quantidade */}
+            <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                {itens.map((item) => {
+                  const precoItem = item.preco ?? item.price ?? 0;
+                  const imageUrl = `${API_BASE_URL}/imagens/${item.id}.jpg`;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="d-flex align-items-center justify-content-between border-bottom py-3"
+                    >
+                      <div className="d-flex align-items-center">
+                        <img
+                          src={imageUrl}
+                          alt={item.nome}
+                          className="me-3 rounded"
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.jpg";
+                          }}
+                        />
+                        <div>
+                          <div className="fw-semibold">{item.nome}</div>
+
+                          <div className="d-flex align-items-center mt-2">
+                            <button
+                              className="btn btn-outline-secondary btn-sm rounded-circle me-2"
+                              onClick={() =>
+                                setItens((prev) =>
+                                  prev.map((i) =>
+                                    i.id === item.id && i.quantity > 1
+                                      ? { ...i, quantity: i.quantity - 1 }
+                                      : i
+                                  )
+                                )
+                              }
+                              disabled={item.quantity <= 1}
+                            >
+                              <MinusIcon />
+                            </button>
+
+                            <span className="fw-bold px-2">{item.quantity}</span>
+
+                            <button
+                              className="btn btn-outline-secondary btn-sm rounded-circle ms-2"
+                              onClick={() =>
+                                setItens((prev) =>
+                                  prev.map((i) =>
+                                    i.id === item.id
+                                      ? { ...i, quantity: i.quantity + 1 }
+                                      : i
+                                  )
+                                )
+                              }
+                            >
+                              <PlusIcon />
+                            </button>
+
+                            <button
+                              className="btn btn-link text-danger ms-3 p-0"
+                              onClick={() =>
+                                setItens((prev) =>
+                                  prev.filter((i) => i.id !== item.id)
+                                )
+                              }
+                            >
+                              <TrashIcon />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-end fw-bold">
+                        R$ {(precoItem * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="text-end fw-bold fs-5 mt-3">
+                  Total: R$ {total.toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            {/* 💳 Pagamento */}
+            <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                <label className="form-label fw-semibold">
+                  Forma de Pagamento
+                </label>
+                <select
+                  className="form-select"
+                  value={pagamento}
+                  onChange={(e) => setPagamento(e.target.value)}
+                >
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="pix">PIX</option>
+                </select>
+              </div>
+            </div>
+
+            {/* 📝 Observação */}
+            <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                <label className="form-label fw-semibold">Observação</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  placeholder="Observações do pedido..."
+                  value={observacao}
+                  onChange={(e) => setObservacao(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* ✅ Botão Confirmar */}
+            <div className="d-grid">
+              <button
+                className="btn btn-primary btn-lg fw-bold"
+                onClick={handleConfirmarPedido}
               >
-                <option value="dinheiro">Dinheiro</option>
-                <option value="cartao">Cartão</option>
-                <option value="pix">PIX</option>
-              </select>
+                Confirmar Pedido
+              </button>
             </div>
-
-            <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-              <label className="block mb-2 font-semibold">Observação</label>
-              <textarea
-                value={observacao}
-                onChange={(e) => setObservacao(e.target.value)}
-                className="border p-2 rounded w-full"
-                rows={3}
-                placeholder="Observações do pedido..."
-              />
-            </div>
-
-            <button
-              onClick={handleConfirmarPedido}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
-            >
-              Confirmar Pedido
-            </button>
           </>
         )}
       </main>
@@ -224,7 +339,11 @@ const PedidoPage: React.FC = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setLoginModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
+        onLoginSuccess={(token) => {
+          localStorage.setItem("token", token);
+          const decoded: any = jwtDecode(token);
+          setCurrentUser({ name: decoded.sub || "Vendedor" });
+        }}
       />
 
       <CartSidebar
@@ -239,8 +358,11 @@ const PedidoPage: React.FC = () => {
           )
         }
         onFinalizeSale={handleConfirmarPedido}
+        onRequireLogin={() => setLoginModalOpen(true)}
       />
-    </div>
+
+      <Footer />
+    </>
   );
 };
 
