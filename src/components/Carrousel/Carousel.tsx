@@ -41,7 +41,7 @@ const Carousel: React.FC<CarouselProps> = ({ products }) => {
   const currentProduct = products[currentIndex];
 
   return (
-    <div className="position-relative w-100 rounded shadow mb-4 bg-dark overflow-hidden" style={{height: '16rem'}}>
+    <div className="position-relative w-100 rounded shadow mb-4 bg-dark overflow-hidden mt-5" style={{height: '16rem', zIndex: 1}}>
       {/* Slides */}
       <div
         className="d-flex w-100 h-100"
