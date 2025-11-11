@@ -1,7 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { User } from "../../../src/types";
 import { CartIcon, UserIcon } from "../Icons/icons";
 import { useTheme } from "../../ThemeContext";
+import * as bootstrap from "bootstrap";
 
 interface HeaderProps {
   user: User | null;
@@ -19,6 +21,30 @@ const Header: React.FC<HeaderProps> = ({
   cartItemCount,
 }) => {
   const { isDark, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+
+  // 🚪 Função local de logout (igual ao Sidebar)
+  const handleLogoutClick = () => {
+  const confirmed = window.confirm("Deseja realmente sair?");
+  if (!confirmed) return;
+
+  console.log("🧩 [Header] Logout confirmado → fechando Offcanvas e limpando sessão...");
+
+  // ✅ Fecha o Offcanvas imediatamente se estiver aberto
+  const offcanvasEl = document.getElementById("sidebarMenu");
+  if (offcanvasEl) {
+    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+    if (bsOffcanvas) bsOffcanvas.hide();
+  }
+
+  // ✅ Agora dispara o logout global (limpa token, carrinho, usuário)
+  onLogout();
+
+  // ✅ Redireciona após um leve atraso (tempo da animação)
+  setTimeout(() => {
+    navigate("/", { replace: true });
+  }, 250);
+};
 
   return (
     <header
@@ -35,26 +61,27 @@ const Header: React.FC<HeaderProps> = ({
         <div className="d-flex align-items-center justify-content-between h-100">
           {/* LOGO */}
           <div className="fs-5 fw-bold">
-            <a
-              href="/"
+            <span
+              onClick={() => navigate("/")}
               className={`text-decoration-none ${
                 isDark ? "text-light" : "text-dark"
               }`}
+              style={{ cursor: "pointer" }}
             >
               Serratec E-Commerce
-            </a>
+            </span>
           </div>
 
           {/* AÇÕES */}
           <div className="d-flex align-items-center gap-3">
-            {/* BOTÃO DE LOGIN OU SAUDAÇÃO */}
             {user ? (
               <div className="d-flex align-items-center gap-3">
                 <span className="text-secondary d-none d-sm-block">
                   Olá, {user.name}
                 </span>
                 <button
-                  onClick={onLogout}
+                  type="button"
+                  onClick={handleLogoutClick}
                   className="btn btn-link text-secondary text-decoration-none p-0"
                 >
                   Sair
@@ -62,6 +89,7 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             ) : (
               <button
+                type="button"
                 onClick={onLoginClick}
                 className="btn btn-link text-secondary text-decoration-none d-flex align-items-center gap-2 p-0"
               >
@@ -72,6 +100,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* MODO CLARO/ESCURO */}
             <button
+              type="button"
               onClick={toggleTheme}
               className="btn btn-link text-secondary text-decoration-none p-0"
               title={isDark ? "Modo claro" : "Modo escuro"}
@@ -81,6 +110,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* CARRINHO */}
             <button
+              type="button"
               onClick={onCartClick}
               className="btn btn-link text-secondary text-decoration-none position-relative p-0"
               title="Abrir carrinho"

@@ -10,7 +10,6 @@ import { Product } from "../../types";
 
 const API_BASE_URL = "http://localhost:8080";
 
-// 👇 Tipo do contexto vindo do MainLayout
 type LayoutContext = {
   addToCart: (product: Product) => void;
 };
@@ -21,16 +20,13 @@ const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const PRODUCTS_PER_PAGE = 8;
 
-  // 👇 Pega a função global do MainLayout
   const { addToCart } = useOutletContext<LayoutContext>();
 
-  // 🔄 Busca produtos do backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/produtos`);
         const data = response.data;
-
         if (!Array.isArray(data)) return;
 
         setProducts(data);
@@ -43,7 +39,6 @@ const Home: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // 📄 Paginação
   const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
   const currentProducts = useMemo(() => {
     const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
@@ -52,47 +47,45 @@ const Home: React.FC = () => {
   }, [currentPage, products]);
 
   return (
-    <div className="container px-3 px-sm-4 px-lg-5 pb-4">
-      <div className="mb-5 mt-4">
-        <Carousel products={featuredProducts} />
-      </div>
+    <>
+      {/* 🔹 Container principal apenas para o conteúdo */}
+      <div className="container px-3 px-sm-4 px-lg-5 pb-4">
+        <div className="mb-5 mt-4">
+          <Carousel products={featuredProducts} />
+        </div>
 
-      <h2 className="fs-1 fw-bold text-dark mb-4 text-center text-md-start">
-        Todos os Produtos
-      </h2>
+        <h2 className="fs-1 fw-bold text-dark mb-4 text-center text-md-start">
+          Todos os Produtos
+        </h2>
 
-      <div className="row g-3">
-        {currentProducts.map((product) => (
-          <div
-            key={product.id}
-            className="col-12 col-sm-6 col-md-4 col-lg-3"
-          >
-            <ProductCard
-              product={product}
-              onAddToCart={addToCart} // 👈 agora chama a função global correta
+        <div className="row g-3">
+          {currentProducts.map((product) => (
+            <div key={product.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
+              <ProductCard product={product} onAddToCart={addToCart} />
+            </div>
+          ))}
+
+          {products.length === 0 && (
+            <div className="text-center text-muted mt-5">
+              <p>Nenhum produto disponível no momento.</p>
+            </div>
+          )}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
             />
-          </div>
-        ))}
-
-        {products.length === 0 && (
-          <div className="text-center text-muted mt-5">
-            <p>Nenhum produto disponível no momento.</p>
           </div>
         )}
       </div>
 
-      {totalPages > 1 && (
-        <div className="mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
-
+      {/* 🔹 Footer fora do container para ocupar 100% da largura */}
       <Footer />
-    </div>
+    </>
   );
 };
 

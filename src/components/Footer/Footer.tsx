@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
         background: "linear-gradient(90deg, #0d6efd, #004aad)", // 🔵 Gradiente azul institucional
       }}
     >
-      <div className="container">
+      <div className="container-fluid"> {/* ✅ ALTERADO de container para container-fluid */}
         {/* GRID PRINCIPAL */}
         <div className="row mb-4 justify-content-center">
           {/* LINKS ÚTEIS */}
@@ -81,8 +81,7 @@ const Footer: React.FC = () => {
 
         <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center text-white-50 small">
           <div className="fw-medium mb-2 mb-sm-0">
-            © {new Date().getFullYear()} Serratec E-Commerce. Todos os direitos
-            reservados.
+            © {new Date().getFullYear()} Serratec E-Commerce. Todos os direitos reservados.
           </div>
 
           <div className="d-flex gap-3">

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import * as bootstrap from "bootstrap";
 
@@ -10,8 +10,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout, isVisible }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // 🧩 Inicializa manualmente o Bootstrap Offcanvas sempre que renderiza
+  // 🧩 Inicializa o Offcanvas sempre que o componente estiver visível
   useEffect(() => {
     const offcanvasElement = document.getElementById("sidebarMenu");
     if (offcanvasElement) {
@@ -19,19 +20,55 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isVisible }) => {
     }
   }, [isVisible]);
 
-  // 🚫 Esconde o botão e o menu se o usuário não estiver logado
+  // 🚫 Oculta o menu se o usuário não estiver logado
   if (!isVisible) return null;
 
+  // 🧭 Itens do menu
   const menu = [
     { path: "/", label: "🏠 Início" },
     { path: "/categorias", label: "🗂️ Categorias" },
     { path: "/clientes", label: "👥 Clientes" },
+    { path: "/usuarios", label: "👤 Usuários" }, // ✅ novo item
     { path: "/pedido", label: "🧾 Pedidos" },
   ];
 
+  // 🚪 Logout (fecha menu e executa logout com segurança)
   const handleLogoutClick = () => {
     const confirmed = window.confirm("Deseja realmente sair?");
-    if (confirmed) onLogout();
+    if (!confirmed) return;
+
+    // Fecha o offcanvas se estiver aberto
+    const offcanvasEl = document.getElementById("sidebarMenu");
+    const bsOffcanvas = offcanvasEl
+      ? bootstrap.Offcanvas.getInstance(offcanvasEl)
+      : null;
+
+    if (bsOffcanvas) {
+      bsOffcanvas.hide();
+    }
+
+    // Aguarda fechamento e executa logout
+    setTimeout(() => {
+      onLogout();
+    }, 250);
+  };
+
+  // ✅ Fecha o menu e navega com delay suave
+  const handleLinkClick = (path: string) => {
+    const offcanvasEl = document.getElementById("sidebarMenu");
+    const bsOffcanvas = offcanvasEl
+      ? bootstrap.Offcanvas.getInstance(offcanvasEl)
+      : null;
+
+    if (bsOffcanvas) {
+      bsOffcanvas.hide();
+      // espera a animação terminar antes de trocar de rota
+      setTimeout(() => {
+        navigate(path);
+      }, 250);
+    } else {
+      navigate(path);
+    }
   };
 
   return (
@@ -44,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isVisible }) => {
         data-bs-target="#sidebarMenu"
         aria-controls="sidebarMenu"
         style={{
-          top: "75px", // abaixo do header fixo
+          top: "75px",
           zIndex: 2000,
           fontWeight: "bold",
         }}
@@ -89,8 +126,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isVisible }) => {
                   style={{
                     textDecoration: "none",
                     transition: "all 0.2s ease",
+                    cursor: "pointer",
                   }}
-                  data-bs-dismiss="offcanvas"
+                  onClick={(e) => {
+                    e.preventDefault(); // evita navegação direta
+                    handleLinkClick(item.path);
+                  }}
                 >
                   {item.label}
                 </Link>
@@ -98,6 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isVisible }) => {
             })}
           </nav>
 
+          {/* BOTÃO SAIR */}
           <button
             onClick={handleLogoutClick}
             className="btn btn-danger w-100 mt-3"
