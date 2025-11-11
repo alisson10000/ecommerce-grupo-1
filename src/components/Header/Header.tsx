@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLoginClick, onCartClick, onLogo
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <header className="position-fixed top-0 start-0 end-0 bg-white bg-opacity-75 shadow z-3" style={{backdropFilter: 'blur(4px)'}}>
+    <header className="position-fixed top-0 start-0 end-0 bg-white shadow z-3" style={{height: '4rem', backdropFilter: 'blur(4px)'}}>
       <div className="container-fluid px-3 px-sm-4 px-lg-5">
         <div className="d-flex align-items-center justify-content-between" style={{height: '4rem'}}>
           <div className="fs-4 fw-bold text-dark">
@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLoginClick, onCartClick, onLogo
                 onClick={onLoginClick}
                 className="btn btn-link text-secondary text-decoration-none d-flex align-items-center gap-2 p-0"
               >
-                <UserIcon className="w-5 h-5" />
+                <UserIcon />
                 <span>Login</span>
               </button>
             )}
@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLoginClick, onCartClick, onLogo
               {isDark ? '☀️' : '🌙'}
             </button>
             <button onClick={onCartClick} className="btn btn-link text-secondary text-decoration-none position-relative p-0">
-              <CartIcon className="w-6 h-6" />
+              <CartIcon />
               {cartItemCount > 0 && (
                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.75rem'}}>
                   {cartItemCount}

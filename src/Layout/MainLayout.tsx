@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import LoginModal from '../components/LoginModal/LoginModal';
 import CartSidebar from '../components/CartSidebar/CartSidebar';
 import { User, CartItem } from '../types';
@@ -64,9 +65,11 @@ const MainLayout: React.FC = () => {
       />
 
       {/* 🔹 Outlet renderiza o conteúdo da página atual */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
         <Outlet />
       </main>
+
+      <Footer />
 
       {/* Modais globais */}
       <LoginModal

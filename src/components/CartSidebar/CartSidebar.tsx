@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { CartItem } from '../../../src/types';
 import { CloseIcon, PlusIcon, MinusIcon, TrashIcon } from '../Icons/icons';
+import { useTheme } from '../../ThemeContext';
 
 const API_BASE_URL = "http://localhost:8080";
 
@@ -19,6 +20,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   onUpdateQuantity,
   onFinalizeSale,
 }) => {
+  const { isDark } = useTheme();
   const subtotal = cartItems.reduce(
     (total, item) => total + (item.preco ?? 0) * item.quantity,
     0
@@ -41,15 +43,15 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   }, [cartItems, subtotal]);
 
   return (
-    <div className={`offcanvas offcanvas-end ${isOpen ? 'show' : ''}`} style={{visibility: isOpen ? 'visible' : 'hidden'}}>
+    <div className={`offcanvas offcanvas-end ${isDark ? 'bg-dark text-light' : 'bg-white text-dark'} ${isOpen ? 'show' : ''}`} style={{visibility: isOpen ? 'visible' : 'hidden'}}>
       <div className="offcanvas-header">
         <h5 className="offcanvas-title">Carrinho</h5>
-        <button type="button" className="btn-close" onClick={onClose}></button>
+        <button type="button" className={`btn-close ${isDark ? 'btn-close-white' : ''}`} onClick={onClose}></button>
       </div>
 
       <div className="offcanvas-body">
         {cartItems.length === 0 ? (
-          <div className="d-flex flex-column align-items-center justify-content-center text-muted">
+          <div className={`d-flex flex-column align-items-center justify-content-center ${isDark ? 'text-light' : 'text-muted'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="mb-3" style={{width: '4rem', height: '4rem'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -79,8 +81,8 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                     }}
                   />
                   <div className="flex-grow-1">
-                    <p className="fw-semibold text-dark mb-1">{item.nome}</p>
-                    <p className="text-muted small mb-2">R$ {(item.preco ?? 0).toFixed(2)}</p>
+                   <p className={`fw-semibold mb-1 ${isDark ? 'text-light' : 'text-dark'}`}>{item.nome}</p>
+                   <p className={`small mb-2 ${isDark ? 'text-light' : 'text-muted'}`}>R$ {(item.preco ?? 0).toFixed(2)}</p>
 
                     <div className="d-flex align-items-center">
                       <button
@@ -103,7 +105,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                   </div>
 
                   <div className="text-end">
-                    <p className="fw-bold text-dark mb-1">R$ {itemTotal}</p>
+                    <p className={`fw-bold mb-1 ${isDark ? 'text-light' : 'text-dark'}`}>R$ {itemTotal}</p>
                     <button
                       onClick={() => onUpdateQuantity(item.id, 0)}
                       className="btn btn-link text-danger p-0"
@@ -119,8 +121,8 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
       </div>
 
       {cartItems.length > 0 && (
-        <div className="offcanvas-footer p-3 border-top bg-light">
-          <div className="d-flex justify-content-between fs-5 fw-semibold text-dark mb-3">
+        <div className={`offcanvas-footer p-3 border-top ${isDark ? 'bg-dark' : 'bg-light'}`}>
+          <div className={`d-flex justify-content-between fs-5 fw-semibold mb-3 ${isDark ? 'text-light' : 'text-dark'}`}>
             <span>Subtotal</span>
             <span>R$ {subtotal.toFixed(2)}</span>
           </div>
