@@ -39,12 +39,12 @@ const PedidoPage: React.FC = () => {
     console.groupEnd();
   }, [location.state]);
 
-  // 💰 Recalcula total
+  // 💰 Recalcula total (corrigido para aceitar `preco` ou `price`)
   useEffect(() => {
     const totalCalc = itens.reduce((sum, item) => {
-      const precoBase = item.preco ?? 0;
+      const precoBase = item.preco ?? item.price ?? 0;
       const subtotalItem = precoBase * item.quantity;
-      console.log(`🧾 Item ${item.id}: ${item.nome} → ${precoBase} x ${item.quantity} = ${subtotalItem}`);
+      console.log(`🧾 Item ${item.id}: ${item.nome || item.name} → ${precoBase} x ${item.quantity} = ${subtotalItem}`);
       return sum + subtotalItem;
     }, 0);
 
@@ -86,8 +86,8 @@ const PedidoPage: React.FC = () => {
 
     const itensFormatados = itens.map((item) => ({
       idProduto: item.id,
-      nome: item.nome,
-      preco: item.preco ?? 0,
+      nome: item.name || item.nome,
+      preco: item.preco ?? item.price ?? 0,
       quantidade: item.quantity,
     }));
 
@@ -165,7 +165,7 @@ const PedidoPage: React.FC = () => {
         cartItemCount={cartItemCount}
       />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <h1 className="text-3xl font-bold mb-6">Resumo do Pedido</h1>
 
         {itens.length === 0 ? (
@@ -174,10 +174,10 @@ const PedidoPage: React.FC = () => {
           <>
             <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
               {itens.map((item) => {
-                const precoItem = item.preco ?? 0;
+                const precoItem = item.preco ?? item.price ?? 0;
                 return (
                   <div key={item.id} className="flex justify-between border-b py-2">
-                    <span>{item.nome} x{item.quantity}</span>
+                    <span>{item.name || item.nome} x{item.quantity}</span>
                     <span>R$ {(precoItem * item.quantity).toFixed(2)}</span>
                   </div>
                 );
