@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
-import { CartItem } from '../../../src/types';
-import { CloseIcon, PlusIcon, MinusIcon, TrashIcon } from '../Icons/icons';
-import { useTheme } from '../../ThemeContext';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { CartItem } from "../../../src/types";
+import { PlusIcon, MinusIcon, TrashIcon } from "../Icons/icons";
+import { useTheme } from "../../ThemeContext";
 
 const API_BASE_URL = "http://localhost:8080";
 
@@ -19,118 +20,147 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   cartItems,
   onUpdateQuantity,
   onFinalizeSale,
+  onRequireLogin,
 }) => {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
+
   const subtotal = cartItems.reduce(
     (total, item) => total + (item.preco ?? 0) * item.quantity,
     0
   );
 
+  // 🧭 Finalizar compra (com verificação de login)
+  const handleFinalize = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("⚠️ Faça login para finalizar a compra.");
+      onClose();           // fecha o carrinho
+      onRequireLogin();    // abre o modal de login
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      alert("Seu carrinho está vazio!");
+      return;
+    }
+
+    navigate("/pedido", { state: { cart: cartItems } });
+    onClose();
+  };
+
   useEffect(() => {
-    console.group("🛒 [CartSidebar] Atualização de Carrinho");
-    console.log("📦 Itens:", cartItems.length);
-    cartItems.forEach((item, i) => {
-      console.log(`➡️ Item ${i + 1}:`, {
-        id: item.id,
-        nome: item.nome,
-        preco: item.preco,
-        qtd: item.quantity,
-        totalItem: (item.preco ?? 0) * item.quantity,
-      });
-    });
-    console.log("💰 Subtotal:", subtotal.toFixed(2));
+    console.group("🛒 [CartSidebar]");
+    console.log("Itens:", cartItems);
+    console.log("Subtotal:", subtotal.toFixed(2));
     console.groupEnd();
   }, [cartItems, subtotal]);
 
   return (
-    <div className={`offcanvas offcanvas-end ${isDark ? 'bg-dark text-light' : 'bg-white text-dark'} ${isOpen ? 'show' : ''}`} style={{visibility: isOpen ? 'visible' : 'hidden'}}>
-      <div className="offcanvas-header">
-        <h5 className="offcanvas-title">Carrinho</h5>
-        <button type="button" className={`btn-close ${isDark ? 'btn-close-white' : ''}`} onClick={onClose}></button>
+    <div
+      className={`offcanvas offcanvas-end ${isDark ? "bg-dark text-light" : "bg-white text-dark"
+        } ${isOpen ? "show" : ""}`}
+      style={{
+        visibility: isOpen ? "visible" : "hidden",
+        width: "350px",
+        transition: "0.3s ease",
+      }}
+    >
+      <div className="offcanvas-header border-bottom">
+        <h5 className="offcanvas-title fw-semibold">Carrinho</h5>
+        <button
+          type="button"
+          className={`btn-close ${isDark ? "btn-close-white" : ""}`}
+          onClick={onClose}
+        ></button>
       </div>
 
       <div className="offcanvas-body">
         {cartItems.length === 0 ? (
-          <div className={`d-flex flex-column align-items-center justify-content-center ${isDark ? 'text-light' : 'text-muted'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="mb-3" style={{width: '4rem', height: '4rem'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <p className="fs-5">Seu carrinho está vazio.</p>
+          <div className="text-center mt-5 text-muted">
+            <p className="fs-6">Seu carrinho está vazio.</p>
           </div>
         ) : (
-          <div>
-            {cartItems.map((item) => {
-              const imageUrl = `${API_BASE_URL}/imagens/${item.id}.jpg`;
-              const itemTotal = ((item.preco ?? 0) * item.quantity).toFixed(2);
+          cartItems.map((item) => {
+            const imageUrl = `${API_BASE_URL}/imagens/${item.id}.jpg`;
+            const itemTotal = ((item.preco ?? 0) * item.quantity).toFixed(2);
 
-              return (
-                <div key={item.id} className="d-flex align-items-start gap-3 border-bottom pb-3 mb-3">
-                  <img
-                    src={imageUrl}
-                    alt={item.nome}
-                    className="rounded"
-                    style={{width: '5rem', height: '5rem', objectFit: 'cover'}}
-                    onError={(e) => {
-                      console.error(`🚨 Erro ao carregar imagem ${item.id}`);
-                      (e.target as HTMLImageElement).src = '/placeholder.jpg';
-                    }}
-                  />
-                  <div className="flex-grow-1">
-                   <p className={`fw-semibold mb-1 ${isDark ? 'text-light' : 'text-dark'}`}>{item.nome}</p>
-                   <p className={`small mb-2 ${isDark ? 'text-light' : 'text-muted'}`}>R$ {(item.preco ?? 0).toFixed(2)}</p>
+            return (
+              <div
+                key={item.id}
+                className="d-flex align-items-start gap-3 border-bottom pb-3 mb-3"
+              >
+                <img
+                  src={imageUrl}
+                  alt={item.nome}
+                  className="rounded"
+                  style={{
+                    width: "4.5rem",
+                    height: "4.5rem",
+                    objectFit: "cover",
+                  }}
+                  onError={(e) =>
+                    ((e.target as HTMLImageElement).src = "/placeholder.jpg")
+                  }
+                />
 
-                    <div className="d-flex align-items-center">
-                      <button
-                        onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                        className="btn btn-outline-secondary btn-sm rounded-circle me-2"
-                        disabled={item.quantity <= 1}
-                      >
-                        <MinusIcon />
-                      </button>
+                <div className="flex-grow-1">
+                  <p className="fw-semibold mb-1">{item.nome}</p>
+                  <p className="small mb-2 text-muted">
+                    R$ {(item.preco ?? 0).toFixed(2)}
+                  </p>
 
-                      <span className="px-3 fw-medium">{item.quantity}</span>
-
-                      <button
-                        onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                        className="btn btn-outline-secondary btn-sm rounded-circle ms-2"
-                      >
-                        <PlusIcon />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="text-end">
-                    <p className={`fw-bold mb-1 ${isDark ? 'text-light' : 'text-dark'}`}>R$ {itemTotal}</p>
+                  <div className="d-flex align-items-center">
                     <button
-                      onClick={() => onUpdateQuantity(item.id, 0)}
-                      className="btn btn-link text-danger p-0"
+                      onClick={() =>
+                        onUpdateQuantity(item.id, item.quantity - 1)
+                      }
+                      className="btn btn-outline-secondary btn-sm rounded-circle me-2"
+                      disabled={item.quantity <= 1}
                     >
-                      <TrashIcon />
+                      <MinusIcon />
+                    </button>
+
+                    <span className="px-2 fw-medium">{item.quantity}</span>
+
+                    <button
+                      onClick={() =>
+                        onUpdateQuantity(item.id, item.quantity + 1)
+                      }
+                      className="btn btn-outline-secondary btn-sm rounded-circle ms-2"
+                    >
+                      <PlusIcon />
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="text-end">
+                  <p className="fw-bold mb-1">R$ {itemTotal}</p>
+                  <button
+                    onClick={() => onUpdateQuantity(item.id, 0)}
+                    className="btn btn-link text-danger p-0"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 
       {cartItems.length > 0 && (
-        <div className={`offcanvas-footer p-3 border-top ${isDark ? 'bg-dark' : 'bg-light'}`}>
-          <div className={`d-flex justify-content-between fs-5 fw-semibold mb-3 ${isDark ? 'text-light' : 'text-dark'}`}>
+        <div
+          className={`offcanvas-footer p-3 border-top ${isDark ? "bg-dark" : "bg-light"
+            }`}
+        >
+          <div className="d-flex justify-content-between fs-6 fw-semibold mb-3">
             <span>Subtotal</span>
             <span>R$ {subtotal.toFixed(2)}</span>
           </div>
 
-          <button
-            onClick={onFinalizeSale}
-            className="btn btn-primary w-100"
-          >
+          <button onClick={handleFinalize} className="btn btn-primary w-100">
             Finalizar Compra
           </button>
         </div>

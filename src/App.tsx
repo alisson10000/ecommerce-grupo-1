@@ -1,14 +1,16 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import AppRoutes from '../src/routes/AppRoutes';
-import { ThemeProvider } from './ThemeContext';
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes"; // ✅ caminho ajustado
+import { ThemeProvider } from "./ThemeContext";
 
-const App: React.FC = () => (
-  <BrowserRouter>
+const App: React.FC = () => {
+  return (
     <ThemeProvider>
-      <AppRoutes />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </ThemeProvider>
-  </BrowserRouter>
-);
+  );
+};
 
 export default App;
