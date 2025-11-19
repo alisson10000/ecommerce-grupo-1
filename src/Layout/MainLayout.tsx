@@ -7,6 +7,7 @@ import Header from "../components/Header/Header";
 import Sidebar from "../components/Sidebar/Sidebar";
 import CartSidebar from "../components/CartSidebar/CartSidebar";
 import LoginModal from "../components/LoginModal/LoginModal";
+import ChatbotWidget from "../components/Chatbot/ChatbotWidget";
 
 import { User, CartItem, Product } from "../types";
 import { useTheme } from "../ThemeContext";
@@ -55,31 +56,31 @@ const MainLayout: React.FC = () => {
   };
 
   // 🚪 Logout (Header e Sidebar compartilham a mesma função)
- const handleLogout = () => {
+  const handleLogout = () => {
     console.log("🚪 handleLogout executado no MainLayout");
-  const confirmou = window.confirm("Deseja realmente sair?");
-  if (!confirmou) return;
+    const confirmou = window.confirm("Deseja realmente sair?");
+    if (!confirmou) return;
 
-  // Limpa dados
-  localStorage.removeItem("token");
-  localStorage.removeItem("cart");
-  setCurrentUser(null);
-  setCart([]);
-  setCartOpen(false);
+    // Limpa dados
+    localStorage.removeItem("token");
+    localStorage.removeItem("cart");
+    setCurrentUser(null);
+    setCart([]);
+    setCartOpen(false);
 
-  // Fecha o menu lateral se estiver aberto
-  const offcanvasEl = document.getElementById("sidebarMenu");
-  if (offcanvasEl) {
-    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
-    if (bsOffcanvas) bsOffcanvas.hide();
-  }
+    // Fecha o menu lateral se estiver aberto
+    const offcanvasEl = document.getElementById("sidebarMenu");
+    if (offcanvasEl) {
+      const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+      if (bsOffcanvas) bsOffcanvas.hide();
+    }
 
-  console.log("🚪 Logout completo, navegando para /");
+    console.log("🚪 Logout completo, navegando para /");
 
-  // ✅ Redireciona
-  setTimeout(() => navigate("/"), 250);
-  console.log("🚪 handleLogout executado no MainLayout");
-};
+    // ✅ Redireciona
+    setTimeout(() => navigate("/"), 250);
+    console.log("🚪 handleLogout executado no MainLayout");
+  };
 
   // 🧮 Total de itens no carrinho (para o Header)
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -177,6 +178,9 @@ const MainLayout: React.FC = () => {
         onFinalizeSale={handleFinalizeSale}
         onRequireLogin={() => setLoginModalOpen(true)}
       />
+
+      {/* CHATBOT WIDGET */}
+      <ChatbotWidget />
     </div>
   );
 };
